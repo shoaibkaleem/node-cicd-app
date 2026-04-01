@@ -4,7 +4,10 @@ on:
   pull_request:
     branches:
       - "**"
-  workflow_dispatch:
+    types:
+      - opened
+      - closed
+
 jobs:
 
   build:
@@ -12,11 +15,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    
-      - name: "Print my name for testing"
-        run: echo "My name is shoaib kaleem"
-
-    
       - name: Checkout Code
         uses: actions/checkout@v4
 
@@ -38,15 +36,13 @@ jobs:
           path: app-artifact.zip
 
 
-
   deploy:
-    if: github.event.pull_request.merged == true
+    if: github.event.action == 'closed' && github.event.pull_request.merged == true
     runs-on: ubuntu-latest
 
     environment: dev
 
     steps:
-
       - name: Checkout Code
         uses: actions/checkout@v4
 
