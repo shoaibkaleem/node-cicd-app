@@ -1,20 +1,14 @@
 name: Node CI/CD Pipeline
 
 on:
-  workflow_dispatch:
-
-  push:
-    branches:
-      - main
+  workflow_dispatch:  # Sirf manual trigger ke liye
 
 jobs:
 
   build:
-    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
 
     steps:
-
       - name: Checkout Code
         uses: actions/checkout@v4
 
@@ -37,7 +31,6 @@ jobs:
 
 
   deploy:
-    if: github.event_name == 'push'
     runs-on: ubuntu-latest
 
     steps:
