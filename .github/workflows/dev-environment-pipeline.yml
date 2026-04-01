@@ -1,0 +1,71 @@
+name: Dev Environment CI/CD Pipeline
+
+on:
+  pull_request:
+    branches:
+      - "**"
+
+jobs:
+
+  build:
+    if: github.event.action == 'opened'
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Create Artifact
+        run: zip -r app-artifact.zip .
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: node-app
+          path: app-artifact.zip
+
+
+
+  deploy:
+    if: github.event.action == 'closed' && github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    environment: dev
+
+    steps:
+
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Create Artifact
+        run: zip -r app-artifact.zip .
+
+      - name: Copy Artifact to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_KEY }}
+          source: "app-artifact.zip"
+          target: "/home/ubuntu/app"
+
+      - name: Deploy App
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_KEY }}
+          script: |
+            cd /home/ubuntu/app
+            unzip -o app-artifact.zip
+            npm install
+            pm2 restart app || pm2 start app.js --name app
