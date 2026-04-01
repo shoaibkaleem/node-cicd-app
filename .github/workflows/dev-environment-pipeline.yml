@@ -12,7 +12,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    
+      - name: "Print my name for testing"
+        run: echo "My name is shoaib kaleem"
 
+    
       - name: Checkout Code
         uses: actions/checkout@v4
 
